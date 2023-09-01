@@ -21,6 +21,7 @@ derived from them:
 - Text
 - Textarea
 - URL
+- Password
 
 ## To install:
 
@@ -49,4 +50,3 @@ setting.
 
 ---
 Copyright 2011-2021 by Ryan Cramer for ProcessWire
-
