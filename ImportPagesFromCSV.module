@@ -3,7 +3,8 @@
 /**
  * ProcessWire Process module to import pages from a CSV file.
  *
- * Copyright 2011-2020 by Ryan Cramer
+ * Copyright 2011-2020 by Ryan Cramer, 2023 by Matjaž Potočnik
+ * Heaviliy modified fork of https://github.com/ryancramerdesign/ImportPagesCSV
  * Licensed under MPL 2.0
  *
  * https://processwire.com
@@ -11,8 +12,8 @@
  *
  * Importing file/image fields
  * ===========================
- * CSV column should contain full URL (or diskpath and filename) to the file you want to import.
- * For fields that support multiple files, place each filename or URL on its own line, OR separate
+ * The CSV column should contain the full URL (or diskpath and filename) to the file you want to import. 
+ * For fields that support multiple files, place each filename or URL on its own line, OR separate 
  * them by | (pipe) OR tab.
  *
  * Importing page reference fields
@@ -178,8 +179,6 @@ class ImportPagesFromCSV extends Process implements Module {
 			$this->error($error);
 			$this->session->redirect("../");
 		}
-		//$this->message("Using template: {$this->template}");
-		//$this->message("Using parent: {$this->parent->path}");
 
 		$form = $this->buildForm2();
 		if($this->input->post('submit')) {
@@ -188,11 +187,6 @@ class ImportPagesFromCSV extends Process implements Module {
 			}
 		}
 		return $form->render();
-		/*if($this->input->post('submit')) {
-			return $this->processForm2($form);
-		} else {
-			return $form->render();
-		}*/
 	}
 
 	/**
@@ -229,10 +223,7 @@ class ImportPagesFromCSV extends Process implements Module {
 		$rowStart = $start * $data['csvBatchSize'] + 2; // start begins at row 2, row 1 is header
 		$rowStop = $rowStart + $data['csvBatchSize'] - 1;
 		if($data['csvBatchSize'] == 0) $rowStop = $data['csvNumRows'] + 1; //make rowStop as large as the number of rows in a file
-		//rowstop ne sme biti večji kot je št vrstic
-		//if($data['csvNumRows'] > 0 && $data['csvBatchSize'] < $data['csvNumRows']) $rowStop = $data['csvNumRows'] + 1; //make rowStop at least as large as rowStop
 		$rowStop = min($rowStop, $data['csvNumRows'] + 1); //prevent rowStop to be larger than the number of rows
-		//$rowStop = max($rowStop, $rowStart); //prevent rowStop to be smaller than rowStart
 
 		$rowNum = $numImported = $numSkipped = $numCreated = $numModified = $numFailed = 0;
 		$out = array();
