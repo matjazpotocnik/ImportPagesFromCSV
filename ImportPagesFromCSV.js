@@ -79,7 +79,7 @@ $(document).ready(function () {
     var processBatch = function (batch) {
         var tmp;
 
-        resultElement.append("<div xclass='info'><span class='faded'>" + pwasMsg.batch + " " + (batch+1) + "... </span></div>")
+        resultElement.append("<div class='processing'><span class='faded'>" + pwasMsg.batch + " " + (batch+1) + "... </span></div>")
             .scrollTop(resultElement[0].scrollHeight - resultElement.height()); // scroll to bottom;
 
         $.ajax({
@@ -88,7 +88,6 @@ $(document).ready(function () {
             dataType: "json",
             success: function (data) { // done
                 // {"counter:"Processing batch 1 out of 5 - 20% complete","numBatches":xx,"numImported":xx,"rows":xx,"error":"xxx"}
-        debugger;
                 if (data && data.numImported !== undefined) {
                   resultElement.children().last().replaceWith("<div class='info'><span class='faded'>" +
                       pwasMsg.batch + " " + (batch+1) + ": " + data.numImported + " row(s) processed " + data.usage + "</span></div>")
@@ -98,7 +97,7 @@ $(document).ready(function () {
 
                 if (data && data.rows !== undefined && data.rows.length) {
                     resultElement.append("<div class='none'><span class='faded'>" + data.rows + "</span></div>")
-                        .scrollTop(resultElement[0].scrollHeight - resultElement.height()); // scroll to bottom;
+                        .scrollTop(resultElement[0].scrollHeight - resultElement.height());
                 }
 
                 if (data && data.error !== undefined) {
@@ -138,13 +137,6 @@ $(document).ready(function () {
                     .scrollTop(resultElement[0].scrollHeight - resultElement.height());
                 finished();
                 showReport();
-                /*batch += 1;
-                if (batch < numBatches) {
-                    processBatch(batch);
-                } else {
-                    finished();
-                    showReport();
-                }*/
             }
         });
     };
@@ -152,10 +144,6 @@ $(document).ready(function () {
     $(pwasBtn).on("click", function (e) {
 
         e.preventDefault();
-
-        //if (window.confirm(pwasMsg.confirm) === false) {
-        //    return false;
-        //}
 
         $(pwasBtn).button("option", "disabled", true);
         $(pwasBtn).remove();

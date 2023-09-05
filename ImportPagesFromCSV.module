@@ -12,8 +12,8 @@
  *
  * Importing file/image fields
  * ===========================
- * The CSV column should contain the full URL (or diskpath and filename) to the file you want to import. 
- * For fields that support multiple files, place each filename or URL on its own line, OR separate 
+ * The CSV column should contain the full URL (or diskpath and filename) to the file you want to import.
+ * For fields that support multiple files, place each filename or URL on its own line, OR separate
  * them by | (pipe) OR tab.
  *
  * Importing page reference fields
@@ -63,7 +63,7 @@ class ImportPagesFromCSV extends Process implements Module {
 	const csvDuplicateModify = 2;
 	const csvNew = 3;
 
-	const debug = true;
+	const debug = false;
 
 	/**
 	 * Array of messages reported by this module

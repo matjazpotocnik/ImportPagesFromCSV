@@ -56,4 +56,4 @@ setting.
 
 ---
 Copyright 2011-2021 by Ryan Cramer for ProcessWire
-Copyright 2023 by Matjaû PotoËnik
+Copyright 2023 by Matja≈æ Potoƒçnik, forked and modified https://github.com/ryancramerdesign/ImportPagesCSV
