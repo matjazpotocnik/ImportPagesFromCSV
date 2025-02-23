@@ -144,7 +144,7 @@ progress::-moz-progress-bar {
 }
 
 #wrap_cancel_btn {
-	margin-left: 0;
+    margin-left: 0;
 }
 #cancel_btn {
     display: none;
@@ -154,5 +154,5 @@ progress::-moz-progress-bar {
 }
 
 .uk-table-small th, .uk-table-small td {
-	padding: 3px; /* more compact */
+    padding: 3px; /* more compact */
 }

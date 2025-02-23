@@ -24,16 +24,16 @@ derived from them:
 
 ## To install:
 
-1. Place the file ImportPagesCSV.module in a /site/modules/ImportPagesCSV/ directory. 
+1. Place the module files in a /site/modules/ImportPagesFromCSV/ directory. 
 2. In ProcessWire admin, click on 'Modules' and 'Check for new modules'. 
-3. Click 'Install' next to the 'Import Pages from CSV' module. 
+3. Click 'Install' next to the 'Import Pages From CSV' module. 
 
 Once installed, the module can be found on your admin Setup menu under the title "Import Pages From CSV". 
 
 ## Usage
 
 Select the template and parent under which new pages will be created. Select the CSV file or enter
-the data it in the textarea field at the bottom. The first line/row in the CSV file is considered as a
+the data in the textarea field at the bottom. The first line/row in the CSV file is considered as a
 header and must contain column names. Specify the delimiter and enclosure used in the CSV file. Enter the
 maximum number of rows to import from the CSV file (useful for testing). Batch size value represents
 the number of rows that will be processed in one go. This is to avoid timeouts and memory limits. 

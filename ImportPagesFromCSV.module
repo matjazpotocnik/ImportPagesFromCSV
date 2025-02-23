@@ -41,7 +41,7 @@ class ImportPagesFromCSV extends Process implements Module {
 	public static function getModuleInfo() {
 		return array(
 			'title' => 'Import Pages From CSV',
-			'version' => 1,
+			'version' => 2,
 			'summary' => 'Import CSV files to create ProcessWire pages.',
 			'author' => 'Ryan Cramer, Matjaž Potočnik',
 			'icon' => 'table',
@@ -142,6 +142,7 @@ class ImportPagesFromCSV extends Process implements Module {
 			'canceled'         => $this->_('Canceled'),
 			'canceling'        => $this->_('Canceling...'),
 			'batch'            => $this->_('Batch'),
+			'analyzing'        => $this->_('Analyzing CSV file/data...'),
 		);
 
 		//TODO: default values
@@ -230,7 +231,7 @@ class ImportPagesFromCSV extends Process implements Module {
 		$time_start = microtime(true);
 
 		$fp = fopen($data['csvFilename'], 'r');
-		while(($row = fgetcsv($fp, 0, $data['csvDelimiter'], $data['csvEnclosure'])) !== false) {
+		while(($row = fgetcsv($fp, 0, $data['csvDelimiter'], $data['csvEnclosure'], '')) !== false) {
 			$rowNum++;
 			if($rowNum === 1) continue; //skip header
 			if($rowNum >= $rowStart && $rowNum <= $rowStop) {
@@ -289,6 +290,7 @@ class ImportPagesFromCSV extends Process implements Module {
 
 		/** @var InputfieldForm $form */
 		$form = $this->modules->get('InputfieldForm');
+		$form->name = 'step1';
 		$form->description = 'Step 1: Define source and destination';
 
 		/** @var InputfieldSelect $f */
@@ -326,12 +328,22 @@ class ImportPagesFromCSV extends Process implements Module {
 		$f->maxFiles = 1;
 		$f->descriptionRows = 0;
 		$f->overwrite = true;
-		$f->required = false;
+		//$f->required = false;
 		$f->description =
 			"The list of field names MUST be provided as the first row in the CSV file. " .
 			"UTF-8 compatible encoding is assumed. File must have the extension '.csv' or '.txt'. " .
 			"If you prefer, you may instead paste in CSV data in the 'More Options' section below. ";
 		$form->add($f);
+
+		//remove old files
+		$filesDir = $this->page->filesManager()->path();
+		$filesArray = array_diff(@scandir($filesDir), ['.', '..']);
+		$csvBasename = 'data-' . $this->user->id;
+		foreach($filesArray as $file) {
+			if(stripos($file, $csvBasename) !== false) {
+				if(is_file($filesDir.$file)) @unlink($filesDir.$file);
+			}
+		}
 
 		/** @var InputfieldFieldset $fieldset */
 		$fieldset = $this->modules->get('InputfieldFieldset');
@@ -431,7 +443,12 @@ class ImportPagesFromCSV extends Process implements Module {
 		//$f->collapsed = Inputfield::collapsedBlank;
 		$fieldset->add($f);
 
-		$this->addSubmit($form, 'Continue to Step 2');
+		$btn = $this->modules->get('InputfieldSubmit');
+		$btn->attr('name', 'submit');
+		$btn->attr('id', 'step1_btn');
+		$btn->attr('data-analyzing-msg', $this->getMessage('analyzing'));
+		$btn->value = $this->_('Continue to Step 2');
+		$form->add($btn);
 
 		return $form;
 	}
@@ -462,7 +479,7 @@ class ImportPagesFromCSV extends Process implements Module {
 		$csvMaxRows = (int) $form->getChildByName('csv_max_rows')->value;
 		$csvBatchSize = (int) $form->getChildByName('csv_batch_size')->value;
 		if($csvBatchSize !== 0 && $csvBatchSize < $csvMaxRows) {
-			$this->error('“Batch size” value must be equal or larger than “Max rows to import”');
+			$this->error('“Batch size” value must be equal or larger than “Max rows to import”. Set “Batch size” to 0.');
 			return false;
 		}
 
@@ -475,11 +492,15 @@ class ImportPagesFromCSV extends Process implements Module {
 
 		$csvBasename = 'data-' . $this->user->id . '.csv';
 		$csvFilename = $this->page->filesManager()->path() . $csvBasename;
+		//bd($csvFile, "csvFile");
+		//bd($csvFilename, "csvFilename");
 
 		if(count($csvFile)) {
 			$csvFile = $csvFile->first();
-			$csvFile->rename($csvBasename);
+			$csvFile->rename($csvBasename); //rename to data-id.csv
 			$csvFilename = $csvFile->filename;
+			//bd($csvFile, "csvFile2");
+			//bd($csvFilename, "csvFilename2");
 
 		} else if(strlen($csvData)) {
 			file_put_contents($csvFilename, $csvData);
@@ -549,7 +570,10 @@ class ImportPagesFromCSV extends Process implements Module {
 		$csvFilename = $this->csvFilename;
 
 		$fp = fopen($csvFilename, 'r');
-		$row = fgetcsv($fp, 0, $csvDelimiter, $csvEnclosure); //first line
+		// PHP 8.4: It is recommended to use an empty string "" as the escape character.
+		// This effectively disables the escaping mechanism, and PHP continues to escape the
+		// $enclosure character by doubling it if it's encountered in the field data.
+		$row = fgetcsv($fp, 0, $csvDelimiter, $csvEnclosure, ''); //first line
 
 		foreach($row as $key => $value) {
 
@@ -571,7 +595,7 @@ class ImportPagesFromCSV extends Process implements Module {
 
 		fclose($fp);
 
-		$this->addSubmit($form, 'Continue to Step 3');
+		$this->addSubmit($form, $this->_('Continue to Step 3'));
 
 		return $form;
 	}
@@ -841,6 +865,7 @@ class ImportPagesFromCSV extends Process implements Module {
 			}
 
 			$field = $this->wire('fields')->get($fieldName);
+			if(!$field) continue;
 			$existingValue = $existingPage->get($fieldName);
 			$existingPage->set($fieldName, $value);
 
@@ -1061,7 +1086,7 @@ class ImportPagesFromCSV extends Process implements Module {
 		$numAllRows = 0;
 		$numEmptyRows = 0;
 		while(!feof($fp)) {
-			$row = fgetcsv($fp, 0, $csvDelimiter, $csvEnclosure);
+			$row = fgetcsv($fp, 0, $csvDelimiter, $csvEnclosure, '');
 			if($numAllRows === 0) {
 				//first row is header row
 				$result['headerRow'] = $row;
@@ -1090,14 +1115,15 @@ class ImportPagesFromCSV extends Process implements Module {
 	 * @param string $separator delimiter between filed values in the CSV file
 	 * @return string|array
 	 *
-	 */	private function getRow($path, $index, $separator =';'){
+	 */
+	private function getRow($path, $index, $separator =';'){
 		$file = new \SplFileObject($path, 'r');
 		$out = "";
 		if($file){
-	    $file->seek($index);
+			$file->seek($index);
 			//$out = explode($separator, $file->current()); //returns an array, like fgetcsv
 			$out = $file->current();
-      $file = null;
+			$file = null;
 		}
 		return $out;
 	}

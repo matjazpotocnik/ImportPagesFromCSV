@@ -8,6 +8,8 @@ $(document).ready(function () {
 
     var pwasBtn = "#import_btn";
     var pwcancelBtn = "#cancel_btn";
+    var pwstep1Btn = "#step1_btn";
+    var form = "#Inputfield_step1";
     var dataUrl = $(pwasBtn).data("url"); //url to execute ../import
     var json = $(pwasBtn).data("json"); //all the data
     var resultElement = $("#result");
@@ -74,6 +76,13 @@ $(document).ready(function () {
         canceled = true;
         $(pwcancelBtn).button({label: pwasMsg.canceling});
         $(pwcancelBtn).button("option", "disabled", true);
+    });
+
+    $(form).on("submit", function (e) {
+    	debugger;
+        var btn = $(pwstep1Btn);
+        var msg = $(pwstep1Btn).data("analyzingMsg");
+        btn.after("<span><i class='fa fa-spinner' style='animation: fa-spin 2s infinite linear'></i> " + msg + "</span>");
     });
 
     var processBatch = function (batch) {
